@@ -41,13 +41,18 @@ class CodecStack(numcodecs.abc.Codec, tuple[numcodecs.abc.Codec]):
     def encode(self, buf):
         encoded = buf
         for codec in self:
-            encoded = codec.encode(np.copy(encoded))
+            encoded = codec.encode(
+                numcodecs.compat.ensure_contiguous_ndarray_like(encoded, flatten=False)
+            )
         return encoded
 
     def decode(self, buf, out=None):
         decoded = buf
         for codec in reversed(self):
-            decoded = codec.decode(np.copy(decoded), out=None)
+            decoded = codec.decode(
+                numcodecs.compat.ensure_contiguous_ndarray_like(decoded, flatten=False),
+                out=None,
+            )
         return numcodecs.compat.ndarray_copy(decoded, out)
 
     def encode_decode(self, buf):
@@ -67,13 +72,13 @@ class CodecStack(numcodecs.abc.Codec, tuple[numcodecs.abc.Codec]):
             buffer protocol.
         """
 
-        encoded = np.ascontiguousarray(buf)
+        encoded = numcodecs.compat.ensure_contiguous_ndarray_like(buf, flatten=False)
         silhouettes = []
 
         for codec in self:
             silhouettes.append((encoded.shape, encoded.dtype))
             encoded = numcodecs.compat.ensure_contiguous_ndarray_like(
-                codec.encode(encoded)
+                codec.encode((encoded)), flatten=False
             )
 
         decoded = encoded
@@ -83,7 +88,7 @@ class CodecStack(numcodecs.abc.Codec, tuple[numcodecs.abc.Codec]):
             out = np.empty(shape=shape, dtype=dtype)
             decoded = codec.decode(decoded, out).reshape(shape)
 
-        return decoded
+        return type(buf)(decoded)
 
     def get_config(self):
         return dict(

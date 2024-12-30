@@ -1,30 +1,11 @@
 # numcodecs-combinators
 
-A stack of codecs, which makes up a combined codec.
+Combinator codecs for the [`numcodecs`][numcodecs] buffer compression API.
 
-On encoding, the codecs are applied to encode from left to right, i.e.
-```
-CodecStack(a, b, c).encode(buf)
-```
-computes
-```
-c.encode(b.encode(a.encode(buf)))
-```
+- [`CodecStack`][numcodecs_combinators.CodecStack]: a stack of codecs
 
-On decoding, the codecs are applied to decode from right to left, i.e.
-```
-CodecStack(a, b, c).decode(buf)
-```
-computes
-```
-a.decode(b.decode(c.decode(buf)))
-```
+## Funding
 
-The [`CodecStack`][numcodecs_combinators.CodecStack] provides the additional
-[`encode_decode(buf)`][numcodecs_combinators.CodecStack.encode_decode]
-method that computes
-```
-stack.decode(stack.encode(buf))
-```
-but makes use of knowing the shapes and dtypes of all intermediary encoding
-stages.
+The Online Laboratory for Climate Science and Meteorology has been developed as part of [ESiWACE3](https://www.esiwace.eu), the third phase of the Centre of Excellence in Simulation of Weather and Climate in Europe.
+
+Funded by the European Union. This work has received funding from the European High Performance Computing Joint Undertaking (JU) under grant agreement No 101093054.

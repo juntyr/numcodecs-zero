@@ -1,44 +1,81 @@
 __all__ = ["CodecStack"]
 
+from collections.abc import Buffer
+from typing import Optional
+
 import numcodecs
-import numcodecs.abc
 import numcodecs.registry
 import numpy as np
 
+from numcodecs.abc import Codec
 
-class CodecStack(numcodecs.abc.Codec, tuple[numcodecs.abc.Codec]):
+
+class CodecStack(Codec, tuple[Codec]):
     """
     A stack of codecs, which makes up a combined codec.
 
     On encoding, the codecs are applied to encode from left to right, i.e.
-    `CodecStack(a, b, c).encode(buf)` computes
-    `c.encode(b.encode(a.encode(buf)))`.
+    ```
+    CodecStack(a, b, c).encode(buf)
+    ```
+    computes
+    ```
+    c.encode(b.encode(a.encode(buf)))
+    ```
 
     On decoding, the codecs are applied to decode from right to left, i.e.
-    `CodecStack(a, b, c).decode(buf)` computes
-    `a.decode(b.decode(c.decode(buf)))`.
+    ```
+    CodecStack(a, b, c).decode(buf)
+    ```
+    computes
+    ```
+    a.decode(b.decode(c.decode(buf)))
+    ```
 
-    The `CodecStack` provides the additional `encode_decode(buf)` method that
-    computes `stack.decode(stack.encode(buf))` but makes use of knowing the
-    shapes and dtypes of all intermediary encoding stages.
+    The [`CodecStack`][numcodecs_combinators.CodecStack] provides the additional
+    [`encode_decode(buf)`][numcodecs_combinators.CodecStack.encode_decode]
+    method that computes
+    ```
+    stack.decode(stack.encode(buf))
+    ```
+    but makes use of knowing the shapes and dtypes of all intermediary encoding
+    stages.
     """
 
     __slots__ = ()
 
     codec_id = "combinators.stack"
 
-    def __new__(cls, *args: tuple[dict | numcodecs.abc.Codec]):
+    def __init__(self, *args: tuple[dict | Codec]):
+        pass
+
+    def __new__(cls, *args: tuple[dict | Codec]):
         return super(CodecStack, cls).__new__(
             cls,
             tuple(
                 codec
-                if isinstance(codec, numcodecs.abc.Codec)
+                if isinstance(codec, Codec)
                 else numcodecs.registry.get_codec(codec)
                 for codec in args
             ),
         )
 
-    def encode(self, buf):
+    def encode(self, buf: Buffer) -> Buffer:
+        """Encode data in `buf`.
+
+        Parameters
+        ----------
+        buf : Buffer
+            Data to be encoded. May be any object supporting the new-style
+            buffer protocol.
+
+        Returns
+        -------
+        enc : Buffer
+            Encoded data. May be any object supporting the new-style buffer
+            protocol.
+        """
+
         encoded = buf
         for codec in self:
             encoded = codec.encode(
@@ -46,7 +83,25 @@ class CodecStack(numcodecs.abc.Codec, tuple[numcodecs.abc.Codec]):
             )
         return encoded
 
-    def decode(self, buf, out=None):
+    def decode(self, buf: Buffer, out: Optional[Buffer] = None):
+        """Decode data in `buf`.
+
+        Parameters
+        ----------
+        buf : Buffer
+            Encoded data. May be any object supporting the new-style buffer
+            protocol.
+        out : Buffer, optional
+            Writeable buffer to store decoded data. N.B. if provided, this buffer must
+            be exactly the right size to store the decoded data.
+
+        Returns
+        -------
+        dec : Buffer
+            Decoded data. May be any object supporting the new-style
+            buffer protocol.
+        """
+
         decoded = buf
         for codec in reversed(self):
             decoded = codec.decode(
@@ -55,19 +110,19 @@ class CodecStack(numcodecs.abc.Codec, tuple[numcodecs.abc.Codec]):
             )
         return numcodecs.compat.ndarray_copy(decoded, out)
 
-    def encode_decode(self, buf):
+    def encode_decode(self, buf: Buffer) -> Buffer:
         """
         Encode, then decode the data in `buf`.
 
         Parameters
         ----------
-        buf : buffer-like
+        buf : Buffer
             Data to be encoded. May be any object supporting the new-style
             buffer protocol.
 
         Returns
         -------
-        dec : buffer-like
+        dec : Buffer
             Decoded data. May be any object supporting the new-style
             buffer protocol.
         """
@@ -90,14 +145,40 @@ class CodecStack(numcodecs.abc.Codec, tuple[numcodecs.abc.Codec]):
 
         return type(buf)(decoded)
 
-    def get_config(self):
+    def get_config(self) -> dict:
+        """
+        Returns the configuration of the codec stack.
+
+        [`numcodecs.registry.get_codec(config)`][numcodecs.registry.get_codec]
+        can be used to reconstruct this stack from the returned config.
+
+        Returns
+        -------
+        config : dict
+            Configuration of the codec stack.
+        """
+
         return dict(
             id=type(self).codec_id,
             codecs=tuple(codec.get_config() for codec in self),
         )
 
     @classmethod
-    def from_config(cls, config):
+    def from_config(cls, config: dict):
+        """
+        Instantiate the codec stack from a configuration [`dict`][dict].
+
+        Parameters
+        ----------
+        config : dict
+            Configuration of the codec stack.
+
+        Returns
+        -------
+        stack : CodecStack
+            Instantiated codec stack.
+        """
+
         return cls(*config["codecs"])
 
     def __repr__(self):

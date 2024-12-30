@@ -25,7 +25,7 @@ class CodecStack(numcodecs.abc.Codec, tuple[numcodecs.abc.Codec]):
 
     __slots__ = ()
 
-    codec_id = "stack"
+    codec_id = "combinators.stack"
 
     def __new__(cls, *args: tuple[dict | numcodecs.abc.Codec]):
         return super(CodecStack, cls).__new__(
@@ -47,7 +47,7 @@ class CodecStack(numcodecs.abc.Codec, tuple[numcodecs.abc.Codec]):
     def decode(self, buf, out=None):
         decoded = buf
         for codec in reversed(self):
-            decoded = self.decode(np.copy(decoded), out=None)
+            decoded = codec.decode(np.copy(decoded), out=None)
         return numcodecs.compat.ndarray_copy(decoded, out)
 
     def encode_decode(self, buf):
@@ -108,3 +108,6 @@ class CodecStack(numcodecs.abc.Codec, tuple[numcodecs.abc.Codec]):
 
     def __rmul__(self, other):
         return CodecStack(*tuple.__rmul__(self, other))
+
+
+numcodecs.registry.register_codec(CodecStack)

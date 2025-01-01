@@ -1,7 +1,7 @@
 __all__ = ["CodecStack"]
 
 from collections.abc import Buffer
-from typing import Optional
+from typing import Optional, Self
 
 import numcodecs
 import numcodecs.registry
@@ -49,7 +49,7 @@ class CodecStack(Codec, tuple[Codec]):
     def __init__(self, *args: tuple[dict | Codec]):
         pass
 
-    def __new__(cls, *args: tuple[dict | Codec]):
+    def __new__(cls, *args: tuple[dict | Codec]) -> Self:
         return super(CodecStack, cls).__new__(
             cls,
             tuple(
@@ -61,7 +61,7 @@ class CodecStack(Codec, tuple[Codec]):
         )
 
     def encode(self, buf: Buffer) -> Buffer:
-        """Encode data in `buf`.
+        """Encode the data in `buf`.
 
         Parameters
         ----------
@@ -84,7 +84,7 @@ class CodecStack(Codec, tuple[Codec]):
         return encoded
 
     def decode(self, buf: Buffer, out: Optional[Buffer] = None):
-        """Decode data in `buf`.
+        """Decode the data in `buf`.
 
         Parameters
         ----------

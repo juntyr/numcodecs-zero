@@ -19,6 +19,6 @@ Licensed under the Mozilla Public License, Version 2.0 ([LICENSE](LICENSE) or ht
 
 ## Funding
 
-The Online Laboratory for Climate Science and Meteorology has been developed as part of [ESiWACE3](https://www.esiwace.eu), the third phase of the Centre of Excellence in Simulation of Weather and Climate in Europe.
+The `numcodecs-combinators` package has been developed as part of [ESiWACE3](https://www.esiwace.eu), the third phase of the Centre of Excellence in Simulation of Weather and Climate in Europe.
 
 Funded by the European Union. This work has received funding from the European High Performance Computing Joint Undertaking (JU) under grant agreement No 101093054.

@@ -5,4 +5,6 @@ mkdocs-gen-files
 mkdocs-literate-nav
 mkdocs-exclude
 
+Pygments
+
 ruff

@@ -4,6 +4,7 @@ from collections.abc import Buffer
 from typing import Optional, Self
 
 import numcodecs
+import numcodecs.compat
 import numcodecs.registry
 import numpy as np
 
@@ -131,7 +132,7 @@ class CodecStack(Codec, tuple[Codec]):
         silhouettes = []
 
         for codec in self:
-            silhouettes.append((encoded.shape, encoded.dtype))
+            silhouettes.append((encoded.shape, np.dtype(encoded.dtype.name)))
             encoded = numcodecs.compat.ensure_contiguous_ndarray_like(
                 codec.encode((encoded)), flatten=False
             )
@@ -143,7 +144,7 @@ class CodecStack(Codec, tuple[Codec]):
             out = np.empty(shape=shape, dtype=dtype)
             decoded = codec.decode(decoded, out).reshape(shape)
 
-        return type(buf)(decoded)
+        return type(buf)(decoded)  # type: ignore
 
     def get_config(self) -> dict:
         """

@@ -1,7 +1,7 @@
 [![image](https://img.shields.io/github/actions/workflow/status/juntyr/numcodecs-zero/ci.yml?branch=main)](https://github.com/juntyr/numcodecs-zero/actions/workflows/ci.yml?query=branch%3Amain)
 [![image](https://img.shields.io/pypi/v/numcodecs-zero.svg)](https://pypi.python.org/pypi/numcodecs-zero)
 [![image](https://img.shields.io/pypi/l/numcodecs-zero.svg)](https://github.com/juntyr/numcodecs-zero/blob/main/LICENSE)
-[![image](https://img.shields.io/pypi/pyversions/numcodecs-zero.svg)](https://pypi.python.org/pypi/numcodecs-zero)
+[![image](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fjuntyr%2Fnumcodecs-zero%2Frefs%2Fheads%2Fmain%2Fpyproject.toml)](https://pypi.python.org/pypi/numcodecs-zero)
 [![image](https://readthedocs.org/projects/numcodecs-zero/badge/?version=latest)](https://numcodecs-zero.readthedocs.io/en/latest/?badge=latest)
 
 # numcodecs-zero

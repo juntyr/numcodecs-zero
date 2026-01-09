@@ -6,10 +6,10 @@ __all__ = ["ZeroCodec"]
 
 from io import BytesIO
 
+import leb128
 import numcodecs.compat
 import numcodecs.registry
 import numpy as np
-import varint
 from numcodecs.abc import Codec
 from typing_extensions import Buffer  # MSPV 3.12
 
@@ -49,12 +49,12 @@ class ZeroCodec(Codec):
         # message: dtype shape
         message = []
 
-        message.append(varint.encode(len(dtype.str)))
+        message.append(leb128.u.encode(len(dtype.str)))
         message.append(dtype.str.encode("ascii"))
 
-        message.append(varint.encode(len(shape)))
+        message.append(leb128.u.encode(len(shape)))
         for s in shape:
-            message.append(varint.encode(s))
+            message.append(leb128.u.encode(s))
 
         return b"".join(message)
 
@@ -83,9 +83,10 @@ class ZeroCodec(Codec):
 
         b_io = BytesIO(b)
 
-        dtype = np.dtype(b_io.read(varint.decode_stream(b_io)).decode("ascii"))
+        dtype = np.dtype(b_io.read(leb128.u.decode_reader(b_io)[0]).decode("ascii"))
         shape = tuple(
-            varint.decode_stream(b_io) for _ in range(varint.decode_stream(b_io))
+            leb128.u.decode_reader(b_io)[0]
+            for _ in range(leb128.u.decode_reader(b_io)[0])
         )
 
         decoded = np.zeros(shape, dtype)

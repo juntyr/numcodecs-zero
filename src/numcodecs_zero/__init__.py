@@ -16,16 +16,25 @@ from typing_extensions import Buffer  # MSPV 3.12
 
 class ZeroCodec(Codec):
     """
-    Codec that decodes to an all-zero array of the same data type and shape as
-    the original data.
+    Codec that decodes to an array filled with a constant `value` (zero by
+    default) of the same data type and shape as the original data.
 
     Encoding produces a bytestring containing information on the data type and
-    shape.
+    shape; the `value` is part of the codec configuration.
+
+    Parameters
+    ----------
+    value : int | float, optional
+        The constant value that the data decodes to.
     """
 
-    __slots__ = ()
+    __slots__: tuple[str, ...] = ("_value",)
+    _value: int | float
 
     codec_id: str = "zero"  # type: ignore
+
+    def __init__(self, *, value: int | float = 0) -> None:
+        self._value = value
 
     def encode(self, buf: Buffer) -> bytes:
         """
@@ -76,7 +85,8 @@ class ZeroCodec(Codec):
         -------
         dec : Buffer
             Decoded data. May be any object supporting the new-style buffer
-            protocol. The decoded data will be all-zero after decoding.
+            protocol. The decoded data will be filled with the constant
+            `value` after decoding.
         """
 
         b = numcodecs.compat.ensure_bytes(buf)
@@ -89,9 +99,27 @@ class ZeroCodec(Codec):
             for _ in range(leb128.u.decode_reader(b_io)[0])
         )
 
-        decoded = np.zeros(shape, dtype)
+        decoded = np.full(shape, self._value, dtype)
 
         return numcodecs.compat.ndarray_copy(decoded, out)  # type: ignore
+
+    def get_config(self) -> dict:
+        """
+        Returns the configuration of this codec.
+
+        [`numcodecs.registry.get_codec(config)`][numcodecs.registry.get_codec]
+        can be used to reconstruct this codec from the returned config.
+
+        Returns
+        -------
+        config : dict
+            Configuration of this codec.
+        """
+
+        return dict(id=type(self).codec_id, value=self._value)
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(value={self._value!r})"
 
 
 numcodecs.registry.register_codec(ZeroCodec)

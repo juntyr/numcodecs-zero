@@ -6,7 +6,7 @@
 
 # numcodecs-zero
 
-`ZeroCodec` for the [`numcodecs`] buffer compression API.
+`ZeroCodec` for the [`numcodecs`] buffer compression API: the data decodes to an array of the same shape and data type filled with a constant `value` (zero by default).
 
 [`numcodecs`]: https://numcodecs.readthedocs.io/en/stable/
 
